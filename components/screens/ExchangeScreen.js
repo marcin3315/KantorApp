@@ -9,10 +9,14 @@ import {
   View,
 } from "react-native";
 import { useBalance } from "../context/BalanceContext";
+import { useTransactions } from "../context/TransactionHistoryContext";
+
 
 
 export default function ExchangeScreen({ navigation }) {
   const { exchange } = useBalance();
+  const { addTransaction } = useTransactions();
+
 
   const route = useRoute();
   const { currency, bid, ask } = route.params;
@@ -37,6 +41,14 @@ export default function ExchangeScreen({ navigation }) {
       currency,
       amount: parsedAmount,
       rate,
+    });
+
+    addTransaction({  //dodawanie transakcji do historii
+      type: mode,
+      currency,
+      amount: parsedAmount,
+      rate,
+      total: parsedAmount * rate,
     });
 
     Alert.alert(

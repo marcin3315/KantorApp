@@ -12,7 +12,19 @@ export default function WalletScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Portfel</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Portfel</Text>
+        <TouchableOpacity
+          style={styles.historyButton}
+          onPress={() => navigation.navigate("History")}
+        >
+          <Text style={styles.historyButtonText}>
+            Historia transakcji
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
+      
 
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Saldo</Text>
@@ -55,6 +67,12 @@ export default function WalletScreen({ navigation }) {
 
 
 const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
   container: {
     flex: 1,
     padding: 16,
@@ -119,4 +137,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
+  historyButton: {
+    padding: 12,
+    backgroundColor: "#1976d2",
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  historyButtonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+
 });
