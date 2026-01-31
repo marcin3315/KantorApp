@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/components/context/AuthContext";
 import { TransactionHistoryProvider } from "@/components/context/TransactionHistoryContext";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { BalanceProvider } from "../../components/context/BalanceContext";
@@ -15,15 +16,17 @@ export default function AppNavigator() {
   return (
     <BalanceProvider>
       <TransactionHistoryProvider>
-        <Stack.Navigator>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="Wallet" component={WalletScreen} />
-          <Stack.Screen name="TopUp" component={TopUpScreen} />
-          <Stack.Screen name="Rates" component={RatesScreen} />
-          <Stack.Screen name="Exchange" component={ExchangeScreen} />
-          <Stack.Screen name="History" component={HistoryScreen} />
-        </Stack.Navigator>
+        <AuthProvider>
+          <Stack.Navigator>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Wallet" component={WalletScreen} />
+            <Stack.Screen name="TopUp" component={TopUpScreen} />
+            <Stack.Screen name="Rates" component={RatesScreen} />
+            <Stack.Screen name="Exchange" component={ExchangeScreen} />
+            <Stack.Screen name="History" component={HistoryScreen} />
+          </Stack.Navigator>
+        </AuthProvider>
       </TransactionHistoryProvider>
     </BalanceProvider>
   );

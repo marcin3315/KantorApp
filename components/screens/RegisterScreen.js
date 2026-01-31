@@ -7,14 +7,19 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useAuth } from "../context/AuthContext";
 
 export default function RegisterScreen({ navigation }) {
+  const { register } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
-  const handleRegister = () => {
-    if (!email || !password || !confirmPassword) {
+  const handleRegister = async () => {
+    if (!email || !password || !confirmPassword || !firstName || !lastName) {
       Alert.alert("Błąd", "Uzupełnij wszystkie pola");
       return;
     }
@@ -29,14 +34,51 @@ export default function RegisterScreen({ navigation }) {
       return;
     }
 
-    Alert.alert("Konto zostało utworzone");
+    try {
+      await register({
+        email,
+        password,
+        firstName,
+        lastName,
+      });
 
-    navigation.replace("Login");
+      Alert.alert("Sukces", "Konto zostało utworzone");
+      navigation.replace("Login");
+    } catch (err) {
+  let message = "Nie udało się zarejestrować";
+
+  if (err.response?.data?.detail) {
+    if (Array.isArray(err.response.data.detail)) {
+      message = err.response.data.detail
+        .map((e) => e.msg)
+        .join("\n");
+    } else {
+      message = err.response.data.detail;
+    }
+  }
+
+  Alert.alert("Błąd rejestracji", message);
+}
+
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Rejestracja</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Imię"
+        value={firstName}
+        onChangeText={setFirstName}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Nazwisko"
+        value={lastName}
+        onChangeText={setLastName}
+      />
 
       <TextInput
         style={styles.input}
@@ -50,7 +92,6 @@ export default function RegisterScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="Hasło"
-        autoCapitalize="none"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
@@ -59,7 +100,6 @@ export default function RegisterScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="Powtórz hasło"
-        autoCapitalize="none"
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
@@ -75,6 +115,8 @@ export default function RegisterScreen({ navigation }) {
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

@@ -1,6 +1,16 @@
-// import axios from "axios";
+import axios from "axios";
 
-// export const api = axios.create({
-//   baseURL: "http://10.0.2.2:8000",
-// });
-// // 
+export const API = axios.create({
+  baseURL: "https://currencyexchangeapp-api.onrender.com",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export const setAuthToken = (token) => {
+  if (token) {
+    API.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete API.defaults.headers.common.Authorization;
+  }
+};

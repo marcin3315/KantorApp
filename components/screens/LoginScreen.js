@@ -7,23 +7,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen({ navigation }) {
+  const { login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
-    if (!email || !password) {
-      Alert.alert("Błąd", "Podaj email i hasło");
-      return;
-    }
-
-    if (email === "test@test.pl" && password === "123456") {
-      navigation.replace("Wallet");
-    } else {
-      Alert.alert("Błąd", "Nieprawidłowy email lub hasło");
-    }
-  };
+  const handleLogin = async () => {
+  try {
+    await login(email, password);
+    navigation.replace("Wallet");
+  } catch {
+    Alert.alert("Błąd", "Nieprawidłowe dane");
+  }
+};
 
   return (
     <View style={styles.container}>
