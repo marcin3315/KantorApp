@@ -11,12 +11,14 @@ import {
   View,
 } from "react-native";
 import { useRates } from "../context/RatesContext";
+import { Colors } from "../../constants/theme";
+import { useColorScheme } from "../../hooks/use-color-scheme";
 
-function RateItem({ code, currency, buy, sell, onPress }) {
+function RateItem({ code, currency, buy, sell, onPress, cardStyle, textStyle }) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      <Text style={styles.currency}>{code}</Text>
-      <Text style={styles.name}>{currency}</Text>
+    <TouchableOpacity style={[styles.card, cardStyle]} onPress={onPress}>
+      <Text style={[styles.currency, textStyle]}>{code}</Text>
+      <Text style={[styles.name, textStyle]}>{currency}</Text>
 
       <View style={styles.row}>
         <Text style={styles.buy}>Kup: {buy}</Text>
@@ -26,13 +28,27 @@ function RateItem({ code, currency, buy, sell, onPress }) {
   );
 }
 
-
 export default function RatesScreen() {
   const navigation = useNavigation();
   const { rates, loading, refreshRates } = useRates();
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
 
   const [query, setQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+
+  const inputStyle = [
+    styles.search,
+    {
+      color: colors.text,
+      backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#fff",
+      borderColor: colors.icon,
+    },
+  ];
+
+  const cardStyle = {
+    backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#f9f9f9",
+  };
 
   const filteredRates = rates.filter(
   (r) =>
@@ -51,20 +67,21 @@ export default function RatesScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" />
-        <Text>Ładowanie kursów...</Text>
+        <Text style={{ color: colors.text }}>Ładowanie kursów...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Kursy walut</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Kursy walut</Text>
 
       <TextInput
-        style={styles.search}
+        style={inputStyle}
         placeholder="Szukaj (np. USD)"
+        placeholderTextColor={colors.icon}
         value={query}
         onChangeText={setQuery}
       />
@@ -78,6 +95,8 @@ export default function RatesScreen() {
         renderItem={({ item }) => (
           <RateItem
             {...item}
+            cardStyle={cardStyle}
+            textStyle={{ color: colors.text }}
             onPress={() =>
               navigation.navigate("Exchange", {
                 currency: item.currency,
@@ -100,20 +119,18 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
   search: {
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
     marginBottom: 12,
   },
   card: {
-    backgroundColor: "#f9f9f9",
     padding: 16,
     borderRadius: 10,
     marginBottom: 10,
     elevation: 2,
   },
   currency: { fontSize: 18, fontWeight: "bold" },
-  name: { color: "#666", marginBottom: 8 },
+  name: { marginBottom: 8 },
   row: { flexDirection: "row", justifyContent: "space-between" },
   buy: { color: "green", fontWeight: "600" },
   sell: { color: "red", fontWeight: "600" },
