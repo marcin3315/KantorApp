@@ -7,29 +7,43 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Colors } from "../../constants/theme";
+import { useColorScheme } from "../../hooks/use-color-scheme";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-  try {
-    await login(email, password);
-  } catch {
-    Alert.alert("Błąd", "Nieprawidłowe dane");
-  }
-};
+    try {
+      await login(email, password);
+    } catch {
+      Alert.alert("Błąd", "Nieprawidłowe dane");
+    }
+  };
+
+  const inputStyle = [
+    styles.input,
+    {
+      color: colors.text,
+      backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#fff",
+      borderColor: colors.icon,
+    },
+  ];
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Logowanie</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Logowanie</Text>
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Email"
+        placeholderTextColor={colors.icon}
         keyboardType="email-address"
         autoCapitalize="none"
         value={email}
@@ -37,8 +51,9 @@ export default function LoginScreen({ navigation }) {
       />
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Hasło"
+        placeholderTextColor={colors.icon}
         autoCapitalize="none"
         secureTextEntry
         value={password}
@@ -50,7 +65,9 @@ export default function LoginScreen({ navigation }) {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-        <Text style={styles.link}>Nie masz konta? Zarejestruj się</Text>
+        <Text style={[styles.link, { color: colors.tint }]}>
+          Nie masz konta? Zarejestruj się
+        </Text>
       </TouchableOpacity>
     </View>
   );
