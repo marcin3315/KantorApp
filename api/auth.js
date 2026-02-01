@@ -1,7 +1,12 @@
 import { API } from "./client";
 
 /* POST /auth/register */
-export const registerUser = async ({email, password, firstName, lastName}) => {
+export const registerUser = async ({
+  email,
+  password,
+  firstName,
+  lastName,
+}) => {
   const res = await API.post("/auth/register", {
     email,
     password,
@@ -24,15 +29,23 @@ export const fetchMe = async () => {
 };
 
 export const updateProfile = async ({ firstName, lastName }) => {
-  const res = await API.put("/auth/me", {
+  const res = await API.patch("/auth/me", {
     first_name: firstName,
     last_name: lastName,
   });
   return res.data;
 };
 
-export const changePassword = async (data) => {
-  const res = await API.put("/auth/password", data);
+export const forgotPassword = async (email) => {
+  const res = await API.post("/auth/forgot-password", { email });
+  return res.data;
+};
+
+export const resetPassword = async ({ token, newPassword }) => {
+  const res = await API.post("/auth/reset-password", {
+    token,
+    new_password: newPassword,
+  });
   return res.data;
 };
 

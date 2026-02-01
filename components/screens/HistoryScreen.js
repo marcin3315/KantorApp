@@ -1,23 +1,39 @@
+import { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { useHistory } from "../context/HistoryContext";
 
 export default function HistoryScreen() {
-  const { history, loading } = useHistory();
+  const { history, loading, refresh } = useHistory();
+  const [refreshing, setRefreshing] = useState(false);
 
-  if (loading) {
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  if (loading && !refreshing) {
     return <ActivityIndicator style={{ marginTop: 20 }} />;
   }
 
   if (history.length === 0) {
     return (
       <View style={styles.center}>
-        <Text>Brak historii transakcji</Text>
+        <Text style={styles.emptyText}>Brak historii transakcji</Text>
+        <TouchableOpacity style={styles.refreshBtn} onPress={onRefresh}>
+          <Text style={styles.refreshBtnText}>Odśwież</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -27,6 +43,9 @@ export default function HistoryScreen() {
       data={history}
       keyExtractor={(item, index) => index.toString()}
       contentContainerStyle={{ padding: 16 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
       renderItem={({ item }) => (
         <View style={styles.card}>
           <Text style={styles.date}>
@@ -40,10 +59,7 @@ export default function HistoryScreen() {
             Kupiono: {item.bought_amount} {item.bought_currency}
           </Text>
 
-          <Text style={styles.rate}>
-            Kurs: {Number(item.rate).toFixed(4)}
-          </Text>
-
+          <Text style={styles.rate}>Kurs: {Number(item.rate).toFixed(4)}</Text>
         </View>
       )}
     />
@@ -69,6 +85,27 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    padding: 16,
+  },
+  emptyText: {
+    marginBottom: 16,
+  },
+  refreshBtn: {
+    backgroundColor: "#1976d2",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  refreshBtnTop: {
+    alignSelf: "flex-start",
+    backgroundColor: "#1976d2",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  refreshBtnText: {
+    color: "#fff",
+    fontWeight: "600",
   },
 });
-

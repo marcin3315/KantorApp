@@ -1,57 +1,30 @@
 import {
   ActivityIndicator,
-  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-import { useAuth } from "../context/AuthContext";
 import { useWallet } from "../context/WalletContext";
-
+import { Colors } from "../../constants/theme";
+import { useColorScheme } from "../../hooks/use-color-scheme";
 
 export default function WalletScreen({ navigation }) {
-  const { balance, wallet, loading} = useWallet();
-  const { logout } = useAuth();
+  const { balance, wallet, loading } = useWallet();
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
+
+  const walletEntries = Object.entries(wallet || {}).filter(
+    ([_, amount]) => amount > 0
+  );
 
   if (loading) return <ActivityIndicator />;
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-    style={styles.logoutButton}
-    onPress={() => {
-      Alert.alert(
-        "Wylogowanie",
-        "Czy na pewno chcesz się wylogować?",
-        [
-          { text: "Anuluj", style: "cancel" },
-          { text: "Wyloguj", style: "destructive", onPress: logout },
-        ]
-      );
-    }}
-  >
-    <Text style={styles.logoutText}>Wyloguj</Text>
-  </TouchableOpacity>
-  <TouchableOpacity
-      style={styles.profileButton}
-      onPress={() => navigation.navigate("Profile")}
-    >
-      <Text style={styles.profileButtonText}>Profil</Text>
-    </TouchableOpacity>
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>Portfel</Text>
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => navigation.navigate("History")}
-        >
-          <Text style={styles.historyButtonText}>
-            Historia transakcji
-          </Text>
-        </TouchableOpacity>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colors.text }]}>Portfel</Text>
       </View>
-      
-      
 
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Saldo</Text>
@@ -70,40 +43,58 @@ export default function WalletScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.actionBtn}
-          onPress={() => navigation.navigate("Rates")}
+          onPress={() => navigation.getParent()?.navigate("Kursy")}
         >
           <Text style={styles.actionText}>Wymień walutę</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.sectionTitle}>Posiadane waluty</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        Posiadane waluty
+      </Text>
 
-      {Object.entries(wallet || {}).map(([code, amount]) => (
-
-        <Text key={code}>
-          {code}: {amount}
+      {walletEntries.length === 0 ? (
+        <Text style={[styles.empty, { color: colors.icon }]}>
+          Brak walut w portfelu
         </Text>
-      ))}
+      ) : (
+        walletEntries.map(([code, amount]) => (
+          <View
+            key={code}
+            style={[
+              styles.currencyRow,
+              {
+                backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#fff",
+                borderColor: colors.icon,
+              },
+            ]}
+          >
+            <Text style={[styles.currencyCode, { color: colors.text }]}>
+              {code}
+            </Text>
+            <Text style={[styles.currencyAmount, { color: colors.text }]}>
+              {Number(amount).toFixed(2)}
+            </Text>
+          </View>
+        ))
+      )}
     </View>
   );
 }
 
 
 const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
   container: {
     flex: 1,
     padding: 16,
   },
+  header: {
+    marginBottom: 20,
+  },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   balanceCard: {
     backgroundColor: "#e8f5e9",
@@ -144,9 +135,11 @@ const styles = StyleSheet.create({
   currencyRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     padding: 14,
-    borderBottomWidth: 1,
-    borderColor: "#eee",
+    marginBottom: 8,
+    borderRadius: 8,
+    borderWidth: 1,
   },
   currencyCode: {
     fontWeight: "bold",
@@ -160,36 +153,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
-  historyButton: {
-    padding: 12,
-    backgroundColor: "#1976d2",
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  historyButtonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  logoutButton: {
-  padding: 10,
-  backgroundColor: "#e53935",
-  borderRadius: 8,
-  },
-  logoutText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  profileButton: {
-  paddingVertical: 10,
-  paddingHorizontal: 14,
-  backgroundColor: "#455a64",
-  borderRadius: 8,
-},
-profileButtonText: {
-  color: "#fff",
-  fontWeight: "bold",
-},
 
 
 

@@ -64,6 +64,12 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.buttonText}>Zaloguj się</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
+        <Text style={[styles.link, { color: colors.tint }]}>
+          Nie pamiętasz hasła?
+        </Text>
+      </TouchableOpacity>
+
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={[styles.link, { color: colors.tint }]}>
           Nie masz konta? Zarejestruj się

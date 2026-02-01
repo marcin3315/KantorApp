@@ -8,12 +8,16 @@ import {
   View,
 } from "react-native";
 import { useWallet } from "../context/WalletContext";
+import { Colors } from "../../constants/theme";
+import { useColorScheme } from "../../hooks/use-color-scheme";
 
 export default function TopUpScreen() {
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
+
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("BLIK"); // BLIK | TRANSFER
   const { topUp } = useWallet();
-
 
   const parsedAmount = parseFloat(amount) || 0;
 
@@ -36,39 +40,61 @@ export default function TopUpScreen() {
     setAmount("");
   };
 
+  const inputStyle = [
+    styles.input,
+    {
+      color: colors.text,
+      backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#fff",
+      borderColor: colors.icon,
+    },
+  ];
+
+  const switchBtnStyle = (isActive) => [
+    styles.switchButton,
+    {
+      borderColor: colors.icon,
+      backgroundColor: isActive
+        ? colorScheme === "dark"
+          ? "#2d3748"
+          : "#cce5ff"
+        : colorScheme === "dark"
+          ? "#1c1e21"
+          : "#fff",
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Zasilenie konta</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Zasilenie konta</Text>
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Kwota (PLN)"
+        placeholderTextColor={colors.icon}
         keyboardType="numeric"
         value={amount}
         onChangeText={setAmount}
       />
 
-      <Text style={styles.sectionTitle}>Metoda płatności</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        Metoda płatności
+      </Text>
 
       <View style={styles.switch}>
         <TouchableOpacity
-          style={[
-            styles.switchButton,
-            method === "BLIK" && styles.active,
-          ]}
+          style={switchBtnStyle(method === "BLIK")}
           onPress={() => setMethod("BLIK")}
         >
-          <Text style={styles.switchText}>BLIK</Text>
+          <Text style={[styles.switchText, { color: colors.text }]}>BLIK</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[
-            styles.switchButton,
-            method === "TRANSFER" && styles.active,
-          ]}
+          style={switchBtnStyle(method === "TRANSFER")}
           onPress={() => setMethod("TRANSFER")}
         >
-          <Text style={styles.switchText}>Przelew</Text>
+          <Text style={[styles.switchText, { color: colors.text }]}>
+            Przelew
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -102,6 +128,7 @@ const styles = StyleSheet.create({
   },
   switch: {
     flexDirection: "row",
+    gap: 8,
     marginBottom: 16,
   },
   switchButton: {
@@ -109,10 +136,7 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  active: {
-    backgroundColor: "#cce5ff",
+    borderRadius: 8,
   },
   switchText: {
     fontWeight: "600",

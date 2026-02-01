@@ -13,16 +13,16 @@ export function WalletProvider({ children }) {
 
 
   const loadWallet = async () => {
-  const balances = await fetchWallet(); // lista
+  const balances = await fetchWallet();
 
   let plnBalance = 0;
   const walletObj = {};
 
   balances.forEach((b) => {
+    const value = Number(b.value);
+    walletObj[b.currency] = value;
     if (b.currency === "PLN") {
-      plnBalance = Number(b.value); // musi być liczba
-    } else {
-      walletObj[b.currency] = Number(b.value);
+      plnBalance = value;
     }
   });
 
@@ -39,10 +39,10 @@ export function WalletProvider({ children }) {
   const walletObj = {};
 
   balances.forEach((b) => {
+    const value = Number(b.value);
+    walletObj[b.currency] = value;
     if (b.currency === "PLN") {
-      plnBalance = Number(b.value);
-    } else {
-      walletObj[b.currency] = Number(b.value);
+      plnBalance = value;
     }
   });
 
@@ -68,10 +68,10 @@ export function WalletProvider({ children }) {
   const walletObj = {};
 
   balances.forEach((b) => {
+    const value = Number(b.value);
+    walletObj[b.currency] = value;
     if (b.currency === "PLN") {
-      pln = Number(b.value);
-    } else {
-      walletObj[b.currency] = Number(b.value);
+      pln = value;
     }
   });
 

@@ -9,20 +9,48 @@ import {
   View,
 } from "react-native";
 import { useWallet } from "../context/WalletContext";
-
-
+import { Colors } from "../../constants/theme";
+import { useColorScheme } from "../../hooks/use-color-scheme";
 
 export default function ExchangeScreen({ navigation }) {
   const { exchange } = useWallet();
-
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
 
   const route = useRoute();
-  const { currency} = route.params;
+  const { currency } = route.params;
 
   const [amount, setAmount] = useState("");
   const [mode, setMode] = useState("BUY"); // BUY | SELL
 
   const parsedAmount = parseFloat(amount) || 0;
+
+  const inputStyle = [
+    styles.input,
+    {
+      color: colors.text,
+      backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#fff",
+      borderColor: colors.icon,
+    },
+  ];
+
+  const switchBtnStyle = (isActive, isBuy) => [
+    styles.switchButton,
+    { borderColor: colors.icon },
+    {
+      backgroundColor: isActive
+        ? isBuy
+          ? colorScheme === "dark"
+            ? "#2d5a2d"
+            : "#c8f7c5"
+          : colorScheme === "dark"
+            ? "#5a2d2d"
+            : "#f7c5c5"
+        : colorScheme === "dark"
+          ? "#1c1e21"
+          : "#fff",
+    },
+  ];
 
   const handleSubmit = async () => {
   if (!parsedAmount || parsedAmount <= 0) {
@@ -50,50 +78,60 @@ export default function ExchangeScreen({ navigation }) {
 
 
   return (
-  <View style={styles.container}>
-    <Text style={styles.title}>Wymiana waluty</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Wymiana waluty</Text>
 
-    <View style={styles.card}>
-      <Text style={styles.currency}>{currency}</Text>
-    </View>
-
-    <View style={styles.switch}>
-      <TouchableOpacity
-        style={[styles.switchButton, mode === "BUY" && styles.activeBuy]}
-        onPress={() => setMode("BUY")}
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#f2f2f2",
+          },
+        ]}
       >
-        <Text style={styles.switchText}>Kup</Text>
-      </TouchableOpacity>
+        <Text style={[styles.currency, { color: colors.text }]}>{currency}</Text>
+      </View>
+
+      <View style={styles.switch}>
+        <TouchableOpacity
+          style={switchBtnStyle(mode === "BUY", true)}
+          onPress={() => setMode("BUY")}
+        >
+          <Text style={[styles.switchText, { color: colors.text }]}>Kup</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={switchBtnStyle(mode === "SELL", false)}
+          onPress={() => setMode("SELL")}
+        >
+          <Text style={[styles.switchText, { color: colors.text }]}>
+            Sprzedaj
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <TextInput
+        style={inputStyle}
+        placeholder={`Ilość ${mode === "BUY" ? "PLN" : currency}`}
+        placeholderTextColor={colors.icon}
+        keyboardType="numeric"
+        value={amount}
+        onChangeText={setAmount}
+      />
 
       <TouchableOpacity
-        style={[styles.switchButton, mode === "SELL" && styles.activeSell]}
-        onPress={() => setMode("SELL")}
+        style={[
+          styles.submit,
+          mode === "BUY" ? styles.buyBtn : styles.sellBtn,
+        ]}
+        onPress={handleSubmit}
       >
-        <Text style={styles.switchText}>Sprzedaj</Text>
+        <Text style={styles.submitText}>
+          {mode === "BUY" ? "Kup walutę" : "Sprzedaj walutę"}
+        </Text>
       </TouchableOpacity>
     </View>
-
-    <TextInput
-      style={styles.input}
-      placeholder={`Ilość ${mode === "BUY" ? "PLN" : currency}`}
-      keyboardType="numeric"
-      value={amount}
-      onChangeText={setAmount}
-    />
-
-    <TouchableOpacity
-      style={[
-        styles.submit,
-        mode === "BUY" ? styles.buyBtn : styles.sellBtn,
-      ]}
-      onPress={handleSubmit}
-    >
-      <Text style={styles.submitText}>
-        {mode === "BUY" ? "Kup walutę" : "Sprzedaj walutę"}
-      </Text>
-    </TouchableOpacity>
-  </View>
-);
+  );
 
 }
 
@@ -121,6 +159,7 @@ const styles = StyleSheet.create({
   },
   switch: {
     flexDirection: "row",
+    gap: 8,
     marginBottom: 16,
   },
   switchButton: {
@@ -128,13 +167,7 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  activeBuy: {
-    backgroundColor: "#c8f7c5",
-  },
-  activeSell: {
-    backgroundColor: "#f7c5c5",
+    borderRadius: 8,
   },
   switchText: {
     fontWeight: "600",

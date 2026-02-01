@@ -1,26 +1,40 @@
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { fetchMe, updateProfile } from "../../api/auth";
 import { useAuth } from "../context/AuthContext";
+import { Colors } from "../../constants/theme";
+import { useColorScheme } from "../../hooks/use-color-scheme";
 
 export default function ProfileScreen() {
+  const { logout } = useAuth();
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
+
   const [loading, setLoading] = useState(true);
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Wylogowanie",
+      "Czy na pewno chcesz się wylogować?",
+      [
+        { text: "Anuluj", style: "cancel" },
+        { text: "Wyloguj", style: "destructive", onPress: logout },
+      ]
+    );
+  };
 
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const { refreshUser } = useAuth();
 
   useEffect(() => {
@@ -62,94 +76,58 @@ export default function ProfileScreen() {
   }
 };
 
-  const handleChangePassword = () => {
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      Alert.alert("Błąd", "Uzupełnij wszystkie pola hasła");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      Alert.alert("Błąd", "Hasła nie są takie same");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      Alert.alert("Błąd", "Hasło musi mieć min. 6 znaków");
-      return;
-    }
-
-    Alert.alert(
-      "Zmiana hasła",
-      "Backend zmiany hasła nie jest jeszcze podłączony"
-    );
-  };
+  const inputStyle = [
+    styles.input,
+    {
+      color: colors.text,
+      backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#fff",
+      borderColor: colors.icon,
+    },
+  ];
 
   if (loading) {
     return <ActivityIndicator style={{ marginTop: 20 }} />;
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profil użytkownika</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Profil użytkownika</Text>
 
-      <Text style={styles.section}>Dane podstawowe</Text>
+      <Text style={[styles.section, { color: colors.text }]}>Dane podstawowe</Text>
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         value={email}
         editable={false}
         placeholder="Email"
+        placeholderTextColor={colors.icon}
       />
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         value={firstName}
         onChangeText={setFirstName}
         placeholder="Imię"
+        placeholderTextColor={colors.icon}
       />
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         value={lastName}
         onChangeText={setLastName}
         placeholder="Nazwisko"
+        placeholderTextColor={colors.icon}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSaveProfile}>
         <Text style={styles.buttonText}>Zapisz dane</Text>
       </TouchableOpacity>
 
-      <Text style={styles.section}>Zmiana hasła</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Stare hasło"
-        secureTextEntry
-        value={oldPassword}
-        onChangeText={setOldPassword}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Nowe hasło"
-        secureTextEntry
-        value={newPassword}
-        onChangeText={setNewPassword}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Powtórz nowe hasło"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
-
       <TouchableOpacity
-        style={[styles.button, styles.secondary]}
-        onPress={handleChangePassword}
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogout}
       >
-        <Text style={styles.buttonText}>Zmień hasło</Text>
+        <Text style={styles.buttonText}>Wyloguj</Text>
       </TouchableOpacity>
     </View>
   );
@@ -183,8 +161,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 6,
   },
-  secondary: {
-    backgroundColor: "#388e3c",
+  logoutButton: {
+    backgroundColor: "#e53935",
+    marginTop: 24,
   },
   buttonText: {
     color: "#fff",
