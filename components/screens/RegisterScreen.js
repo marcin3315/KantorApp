@@ -1,16 +1,20 @@
 import { useState } from "react";
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useAuth } from "../context/AuthContext";
+import { useColorScheme } from "../../hooks/use-color-scheme";
+import { Colors } from "../../constants/theme";
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
+  const colorScheme = useColorScheme() ?? "light";
+  const colors = Colors[colorScheme];
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,27 +66,39 @@ export default function RegisterScreen({ navigation }) {
 
   };
 
+  const inputStyle = [
+    styles.input,
+    {
+      color: colors.text,
+      backgroundColor: colorScheme === "dark" ? "#1c1e21" : "#fff",
+      borderColor: colors.icon,
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Rejestracja</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>Rejestracja</Text>
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Imię"
+        placeholderTextColor={colors.icon}
         value={firstName}
         onChangeText={setFirstName}
       />
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Nazwisko"
+        placeholderTextColor={colors.icon}
         value={lastName}
         onChangeText={setLastName}
       />
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Email"
+        placeholderTextColor={colors.icon}
         keyboardType="email-address"
         autoCapitalize="none"
         value={email}
@@ -90,16 +106,18 @@ export default function RegisterScreen({ navigation }) {
       />
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Hasło"
+        placeholderTextColor={colors.icon}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
 
       <TextInput
-        style={styles.input}
+        style={inputStyle}
         placeholder="Powtórz hasło"
+        placeholderTextColor={colors.icon}
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
@@ -110,7 +128,9 @@ export default function RegisterScreen({ navigation }) {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.link}>Masz już konto? Zaloguj się</Text>
+        <Text style={[styles.link, { color: colors.tint }]}>
+          Masz już konto? Zaloguj się
+        </Text>
       </TouchableOpacity>
     </View>
   );
