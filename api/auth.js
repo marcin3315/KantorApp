@@ -23,6 +23,19 @@ export const fetchMe = async () => {
   return res.data;
 };
 
+export const updateProfile = async ({ firstName, lastName }) => {
+  const res = await API.put("/auth/me", {
+    first_name: firstName,
+    last_name: lastName,
+  });
+  return res.data;
+};
+
+export const changePassword = async (data) => {
+  const res = await API.put("/auth/password", data);
+  return res.data;
+};
+
 /* POST /auth/logout */
 export const logoutUser = async () => {
   await API.post("/auth/logout");

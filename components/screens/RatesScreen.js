@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,100 +10,68 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRates } from "../context/RatesContext";
 
-const NBP_URL = "https://api.nbp.pl/api/exchangerates/tables/C?format=json";
-
-function RateItem({ currency, code, bid, ask, onPress }) {
+function RateItem({ code, currency, buy, sell, onPress }) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <Text style={styles.currency}>{code}</Text>
       <Text style={styles.name}>{currency}</Text>
 
       <View style={styles.row}>
-        <Text style={styles.buy}>Kup: {bid}</Text>
-        <Text style={styles.sell}>Sprzedaj: {ask}</Text>
+        <Text style={styles.buy}>Kup: {buy}</Text>
+        <Text style={styles.sell}>Sprzedaj: {sell}</Text>
       </View>
     </TouchableOpacity>
   );
 }
 
+
 export default function RatesScreen() {
   const navigation = useNavigation();
+  const { rates, loading, refreshRates } = useRates();
 
-  const [rates, setRates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
   const [query, setQuery] = useState("");
-
-  //Pobieranie z NBP
-  const fetchRates = async () => {
-    try {
-      setError(null); //stary komunikat błędu nie zostanie na ekranie, jeśli kolejne pobranie się uda
-      const res = await fetch(NBP_URL);
-      const data = await res.json();
-
-      // tabela C → data[0].rates
-      setRates(data[0].rates);
-    } catch (_e) {
-      setError("Nie udało się pobrać kursów z NBP");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    //Gdy ekran pojawi się pierwszy raz, pobiera kursy walut
-    fetchRates();
-  }, []);
-
-  //Pull to refresh
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchRates();
-    setRefreshing(false);
-  }, []);
+  const [refreshing, setRefreshing] = useState(false);
 
   const filteredRates = rates.filter(
-    (r) =>
-      r.code.toUpperCase().includes(query.toUpperCase()) ||
-      r.currency.toLowerCase().includes(query.toLowerCase()),
-  );
+  (r) =>
+    r.code.includes(query.toUpperCase()) ||
+    r.currency.toUpperCase().includes(query.toUpperCase())
+);
+
+
+
+  const onRefresh = useCallback(async () => {
+  setRefreshing(true);
+  await refreshRates();
+  setRefreshing(false);
+}, [refreshRates]);
+
 
   if (loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
-        <Text>Ładowanie kursów NBP...</Text>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.error}>{error}</Text>
-        <TouchableOpacity onPress={fetchRates}>
-          <Text style={styles.retry}>Spróbuj ponownie</Text>
-        </TouchableOpacity>
+        <Text>Ładowanie kursów...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Kursy walut (NBP)</Text>
+      <Text style={styles.title}>Kursy walut</Text>
 
       <TextInput
         style={styles.search}
-        placeholder="Szukaj (np. EUR, dolar)"
+        placeholder="Szukaj (np. USD)"
         value={query}
         onChangeText={setQuery}
       />
 
       <FlatList
         data={filteredRates}
-        keyExtractor={(item) => item.code}
+        keyExtractor={(item) => item.currency}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -112,9 +80,9 @@ export default function RatesScreen() {
             {...item}
             onPress={() =>
               navigation.navigate("Exchange", {
-                currency: item.code,
-                bid: item.bid,
-                ask: item.ask,
+                currency: item.currency,
+                buy: item.buy,
+                sell: item.sell,
               })
             }
           />
@@ -123,6 +91,8 @@ export default function RatesScreen() {
     </View>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pymongo.errors import DuplicateKeyError
 from fastapi.security import OAuth2PasswordBearer
-
+from app.schemas.user import UserUpdateProfile
 from app.models.token import TokenBlacklist
 from app.models.user import User
 from app.schemas import UserRegister, UserResponse, Token, UserLogin
@@ -72,6 +72,18 @@ async def login_user(user_data: UserLogin):
 
 @router.get("/me", response_model=UserResponse)
 async def user_data(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.put("/me", response_model=UserResponse)
+async def update_profile(
+    data: UserUpdateProfile,
+    current_user: User = Depends(get_current_user),
+):
+    current_user.first_name = data.first_name
+    current_user.last_name = data.last_name
+
+    await current_user.save()
+
     return current_user
 
 @router.post("/logout", status_code=status.HTTP_200_OK)

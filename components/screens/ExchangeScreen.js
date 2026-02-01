@@ -8,115 +8,93 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useBalance } from "../context/BalanceContext";
-import { useTransactions } from "../context/TransactionHistoryContext";
+import { useWallet } from "../context/WalletContext";
 
 
 
 export default function ExchangeScreen({ navigation }) {
-  const { exchange } = useBalance();
-  const { addTransaction } = useTransactions();
+  const { exchange } = useWallet();
 
 
   const route = useRoute();
-  const { currency, bid, ask } = route.params;
+  const { currency} = route.params;
 
   const [amount, setAmount] = useState("");
   const [mode, setMode] = useState("BUY"); // BUY | SELL
 
   const parsedAmount = parseFloat(amount) || 0;
 
-  const rate = mode === "BUY" ? ask : bid;
-  const result = parsedAmount * rate;
+  const handleSubmit = async () => {
+  if (!parsedAmount || parsedAmount <= 0) {
+    Alert.alert("Błąd", "Podaj poprawną kwotę");
+    return;
+  }
 
-  const handleSubmit = () => {
-    if (!parsedAmount || parsedAmount <= 0) {
-      Alert.alert("Błąd", "Podaj poprawną kwotę");
-      return;
-    }
-
-    try {
-    exchange({
-      mode,
-      currency,
+  try {
+    await exchange({
+      fromCurrency: mode === "BUY" ? "PLN" : currency,
+      toCurrency: mode === "BUY" ? currency : "PLN",
       amount: parsedAmount,
-      rate,
     });
 
-    addTransaction({  //dodawanie transakcji do historii
-      type: mode,
-      currency,
-      amount: parsedAmount,
-      rate,
-      total: parsedAmount * rate,
-    });
-
-    Alert.alert(
-      mode === "BUY"
-        ? "Waluta została kupiona"
-        : "Waluta została sprzedana"
-    );
+    Alert.alert("Sukces", "Wymiana zakończona");
 
     navigation.goBack();
   } catch (err) {
-    Alert.alert("Błąd", err.message);
+    Alert.alert(
+      "Błąd",
+      err.response?.data?.detail || "Błąd wymiany waluty"
+    );
   }
+};
 
-    //tutaj w przyszłości:
-    // api.post("/fx/trade", {...})
-  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Wymiana waluty</Text>
+  <View style={styles.container}>
+    <Text style={styles.title}>Wymiana waluty</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.currency}>{currency}</Text>
-        <Text>Kupno: {ask}</Text>
-        <Text>Sprzedaż: {bid}</Text>
-      </View>
+    <View style={styles.card}>
+      <Text style={styles.currency}>{currency}</Text>
+    </View>
 
-      <View style={styles.switch}>
-        <TouchableOpacity
-          style={[styles.switchButton, mode === "BUY" && styles.activeBuy]}
-          onPress={() => setMode("BUY")}
-        >
-          <Text style={styles.switchText}>Kup</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.switchButton, mode === "SELL" && styles.activeSell]}
-          onPress={() => setMode("SELL")}
-        >
-          <Text style={styles.switchText}>Sprzedaj</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder={`Ilość ${currency}`}
-        keyboardType="numeric"
-        value={amount}
-        onChangeText={setAmount}
-      />
-
-      <View style={styles.summary}>
-        <Text>Kurs: {rate}</Text>
-        <Text style={styles.total}>
-          {mode === "BUY" ? "Do zapłaty" : "Otrzymasz"}: {result.toFixed(2)} PLN
-        </Text>
-      </View>
+    <View style={styles.switch}>
+      <TouchableOpacity
+        style={[styles.switchButton, mode === "BUY" && styles.activeBuy]}
+        onPress={() => setMode("BUY")}
+      >
+        <Text style={styles.switchText}>Kup</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.submit, mode === "BUY" ? styles.buyBtn : styles.sellBtn]}
-        onPress={handleSubmit}
+        style={[styles.switchButton, mode === "SELL" && styles.activeSell]}
+        onPress={() => setMode("SELL")}
       >
-        <Text style={styles.submitText}>
-          {mode === "BUY" ? "Kup walutę" : "Sprzedaj walutę"}
-        </Text>
+        <Text style={styles.switchText}>Sprzedaj</Text>
       </TouchableOpacity>
     </View>
-  );
+
+    <TextInput
+      style={styles.input}
+      placeholder={`Ilość ${mode === "BUY" ? "PLN" : currency}`}
+      keyboardType="numeric"
+      value={amount}
+      onChangeText={setAmount}
+    />
+
+    <TouchableOpacity
+      style={[
+        styles.submit,
+        mode === "BUY" ? styles.buyBtn : styles.sellBtn,
+      ]}
+      onPress={handleSubmit}
+    >
+      <Text style={styles.submitText}>
+        {mode === "BUY" ? "Kup walutę" : "Sprzedaj walutę"}
+      </Text>
+    </TouchableOpacity>
+  </View>
+);
+
 }
 
 

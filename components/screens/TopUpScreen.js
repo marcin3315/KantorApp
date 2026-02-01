@@ -1,29 +1,29 @@
 import { useState } from "react";
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useBalance } from "../context/BalanceContext";
+import { useWallet } from "../context/WalletContext";
 
 export default function TopUpScreen() {
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("BLIK"); // BLIK | TRANSFER
-  const { topUp } = useBalance();
+  const { topUp } = useWallet();
 
 
   const parsedAmount = parseFloat(amount) || 0;
 
-  const handleTopUp = () => {
+  const handleTopUp = async () => {
     if (!parsedAmount || parsedAmount <= 0) {
       Alert.alert("Błąd", "Podaj poprawną kwotę");
       return;
     }
 
-    topUp(parsedAmount);
+    await topUp(parsedAmount);
 
     Alert.alert(
       "Zasilenie konta",
@@ -32,10 +32,6 @@ export default function TopUpScreen() {
         `Konto zostało zasilone.`,
       [{ text: "OK" }]
     );
-
-    //w przyszłości:
-    // setBalance(balance + parsedAmount)
-    // api.post("/topup", {...})
 
     setAmount("");
   };

@@ -1,7 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useContext, useEffect, useState } from "react";
-import { fetchMe, loginUser, logoutUser, registerUser } from "../../api/auth";
-import { setAuthToken } from "../../api/client";
+import { fetchMe, loginUser, registerUser } from "../../api/auth";
+import { API, setAuthToken } from "../../api/client";
+
 
 const AuthContext = createContext();
 
@@ -57,17 +58,26 @@ const register = async ({ email, password, firstName, lastName }) => {
 
   /* LOGOUT */
   const logout = async () => {
-    try {
-      await logoutUser();
-    } catch {}
-    await AsyncStorage.removeItem("token");
-    setAuthToken(null);
-    setUser(null);
-  };
+  try {
+    await API.post("/auth/logout"); 
+  } catch (_e) {
+
+  }
+
+  await AsyncStorage.removeItem("token");
+  API.defaults.headers.common.Authorization = "";
+
+  setUser(null);
+};
+
+const refreshUser = async () => {
+  const me = await fetchMe();
+  setUser(me);
+};
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn: !!user, isLoading, login, register, logout }}
+      value={{ user, isLoggedIn: !!user, isLoading, login, register, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,17 +1,44 @@
 import {
-  FlatList,
+  ActivityIndicator,
+  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import { useBalance } from "../context/BalanceContext";
+import { useAuth } from "../context/AuthContext";
+import { useWallet } from "../context/WalletContext";
+
 
 export default function WalletScreen({ navigation }) {
-  const { balance, wallet} = useBalance();
+  const { balance, wallet, loading} = useWallet();
+  const { logout } = useAuth();
+
+  if (loading) return <ActivityIndicator />;
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+    style={styles.logoutButton}
+    onPress={() => {
+      Alert.alert(
+        "Wylogowanie",
+        "Czy na pewno chcesz się wylogować?",
+        [
+          { text: "Anuluj", style: "cancel" },
+          { text: "Wyloguj", style: "destructive", onPress: logout },
+        ]
+      );
+    }}
+  >
+    <Text style={styles.logoutText}>Wyloguj</Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+      style={styles.profileButton}
+      onPress={() => navigation.navigate("Profile")}
+    >
+      <Text style={styles.profileButtonText}>Profil</Text>
+    </TouchableOpacity>
       <View style={styles.headerRow}>
         <Text style={styles.title}>Portfel</Text>
         <TouchableOpacity
@@ -29,7 +56,7 @@ export default function WalletScreen({ navigation }) {
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Saldo</Text>
         <Text style={styles.balanceValue}>
-          {balance.toFixed(2)} PLN
+          {typeof balance === "number" ? balance.toFixed(2) : "0.00"} PLN
         </Text>
       </View>
 
@@ -51,16 +78,12 @@ export default function WalletScreen({ navigation }) {
 
       <Text style={styles.sectionTitle}>Posiadane waluty</Text>
 
-      <FlatList
-  data={Object.entries(wallet)}
-  keyExtractor={([code]) => code}
-  renderItem={({ item }) => (
-    <View style={styles.currencyRow}>
-      <Text>{item[0]}</Text>
-      <Text>{item[1]}</Text>
-    </View>
-  )}
-/>
+      {Object.entries(wallet || {}).map(([code, amount]) => (
+
+        <Text key={code}>
+          {code}: {amount}
+        </Text>
+      ))}
     </View>
   );
 }
@@ -148,5 +171,26 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "bold",
   },
+  logoutButton: {
+  padding: 10,
+  backgroundColor: "#e53935",
+  borderRadius: 8,
+  },
+  logoutText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  profileButton: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  backgroundColor: "#455a64",
+  borderRadius: 8,
+},
+profileButtonText: {
+  color: "#fff",
+  fontWeight: "bold",
+},
+
+
 
 });

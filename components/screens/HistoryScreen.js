@@ -1,31 +1,49 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
-import { useTransactions } from "../context/TransactionHistoryContext";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useHistory } from "../context/HistoryContext";
 
 export default function HistoryScreen() {
-  const { transactions } = useTransactions();
+  const { history, loading } = useHistory();
 
-  if (transactions.length === 0) {
+  if (loading) {
+    return <ActivityIndicator style={{ marginTop: 20 }} />;
+  }
+
+  if (history.length === 0) {
     return (
       <View style={styles.center}>
-        <Text>Brak transakcji</Text>
+        <Text>Brak historii transakcji</Text>
       </View>
     );
   }
 
   return (
     <FlatList
-      data={transactions}
-      keyExtractor={(item) => item.id}
+      data={history}
+      keyExtractor={(item, index) => index.toString()}
+      contentContainerStyle={{ padding: 16 }}
       renderItem={({ item }) => (
-        <View style={styles.row}>
-          <Text style={styles.type}>
-            {item.type === "BUY" ? "Kupno" : "Sprzedaż"} 
-          </Text>
-          <Text>{item.amount} {item.currency} po kursie {item.rate}</Text>
-          <Text>{item.total.toFixed(2)} PLN</Text>
+        <View style={styles.card}>
           <Text style={styles.date}>
-            {new Date(item.date).toLocaleString()}
+            {new Date(item.created_at).toLocaleString()}
           </Text>
+
+          <Text>
+            Sprzedano: {item.sold_amount} {item.sold_currency}
+          </Text>
+          <Text>
+            Kupiono: {item.bought_amount} {item.bought_currency}
+          </Text>
+
+          <Text style={styles.rate}>
+            Kurs: {Number(item.rate).toFixed(4)}
+          </Text>
+
         </View>
       )}
     />
@@ -33,17 +51,19 @@ export default function HistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
-  },
-  type: {
-    fontWeight: "bold",
+  card: {
+    backgroundColor: "#f2f2f2",
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 12,
   },
   date: {
     fontSize: 12,
     color: "#666",
+    marginBottom: 6,
+  },
+  rate: {
+    marginTop: 6,
   },
   center: {
     flex: 1,
@@ -51,3 +71,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+

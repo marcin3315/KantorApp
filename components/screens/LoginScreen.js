@@ -18,7 +18,6 @@ export default function LoginScreen({ navigation }) {
   const handleLogin = async () => {
   try {
     await login(email, password);
-    navigation.replace("Wallet");
   } catch {
     Alert.alert("Błąd", "Nieprawidłowe dane");
   }
